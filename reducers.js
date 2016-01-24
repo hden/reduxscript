@@ -14,6 +14,8 @@ function reducer (db = ds.empty_db(), action) {
     case COMPLETE_TODO:
       return transact(db, [[':db/add', action.id, 'completed', true]])
     case SET_VISIBILITY_FILTER:
+      // Entity with id=0 is used for storing auxilary information
+      // such as visibilityFilter
       return transact(db, [[':db/add', 0, 'visibilityFilter', action.filter]])
     default:
       return db

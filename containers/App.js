@@ -7,10 +7,6 @@ import TodoList from '../components/TodoList'
 import Footer from '../components/Footer'
 import ds from 'datascript'
 
-function flatten (seq) {
-  return seq.reduce((state, next) => state.concat(next), [])
-}
-
 class App extends Component {
   render () {
     const { db, dispatch, visibleTodos, visibilityFilter } = this.props
@@ -47,6 +43,10 @@ App.propTypes = {
   redoDisabled: PropTypes.bool.isRequired
 }
 
+function flatten (seq) {
+  return seq.reduce((state, next) => state.concat(next), [])
+}
+
 function selectTodos (db, filter = VisibilityFilters.SHOW_ALL) {
   var q = [true, false]
   switch (filter) {
@@ -63,13 +63,14 @@ function selectTodos (db, filter = VisibilityFilters.SHOW_ALL) {
 }
 
 function select ({ db }) {
-  var [filter] = flatten(ds.q(`[:find ?f
-                                :where [_ "visibilityFilter" ?f]]`, db.present))
+  var q = `["visibilityFilter"
+            (default "visibilityFilter" "${VisibilityFilters.SHOW_ALL}")]`
+  var { visibilityFilter } = ds.pull(db.present, q, 0)
   return {
     undoDisabled: db.past.length === 0,
     redoDisabled: db.future.length === 0,
-    visibleTodos: selectTodos(db.present, filter),
-    visibilityFilter: filter || VisibilityFilters.SHOW_ALL,
+    visibleTodos: selectTodos(db.present, visibilityFilter),
+    visibilityFilter: visibilityFilter,
     db: db.present
   }
 }
